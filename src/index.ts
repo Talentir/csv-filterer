@@ -1,12 +1,15 @@
 import fs from "fs"
 import * as readline from 'node:readline';
 
+// ------------ EDIT HERE ------------------
+// These files are in relation to where you run the script
 const inputFile = "organizations-2000000.csv"
 const outputFile = "filtered.csv"
 const columnFilters = [{
     column: "Name",
     value: "Cuevas-Carey"
 }]
+// ------------------------------------------
 
 const readStream = fs.createReadStream(inputFile)
 const writeStream = fs.createWriteStream('filtered.csv')
@@ -43,6 +46,6 @@ rl.on('line', (line) => {
 
     if (found) {
         writeStream.write(line + "\n")
-        console.log("found line", line)
+        console.log("Found Line: ", line)
     }
 })

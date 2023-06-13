@@ -3,16 +3,17 @@ import * as readline from 'node:readline';
 
 // ------------ EDIT HERE ------------------
 // These files are in relation to where you run the script
-const inputFile = "organizations-2000000.csv"
-const outputFile = "filtered.csv"
+const inputFile = "../test-file.csv"
+const outputFile = "../filtered.csv"
+
 const columnFilters = [{
-    column: "Name",
-    value: "Cuevas-Carey"
+    column: "Variable_code",
+    value: "H04"
 }]
 // ------------------------------------------
 
 const readStream = fs.createReadStream(inputFile)
-const writeStream = fs.createWriteStream('filtered.csv')
+const writeStream = fs.createWriteStream(outputFile)
 
 const rl = readline.createInterface({
     input: readStream,

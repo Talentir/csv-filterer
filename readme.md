@@ -12,11 +12,14 @@ nvm use 18
 
 ## Install code
 ```bash
+cd ~/Download/csv-filterer-main
+```
+```bash
 npm install
 ```
 
 ## Adjust file names
-Go to `src/index.ts`
+Edit `src/index.ts`
 
 
 ## Run code

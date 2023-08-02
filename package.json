@@ -1,18 +1,33 @@
 {
-  "name": "csv-filterer",
+  "name": "talentir",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "bin": {
+    "my-cli": "./dist/index.js"
+  },
   "scripts": {
-    "filter": "ts-node ./src/index.ts"
+    "dev": "ts-node ./src/index.ts",
+    "build": "tsc",
+    "package": "pkg ."
+  },
+  "pkg": {
+    "outputPath": "build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/commander": "^2.12.2",
     "@types/node": "^20.1.5",
     "nodemon": "^2.0.22",
+    "pkg": "^5.8.1",
     "ts-node": "^10.9.1",
+    "ts-standard": "^12.0.2",
     "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "ascii-progress": "^2.0.0",
+    "commander": "^11.0.0"
   }
 }

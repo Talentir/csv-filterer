@@ -5,20 +5,26 @@ import { ProgressBar } from 'ascii-progress'
 
 program
   .name('talentir')
+  .description('CLI to process huge Youtube CSV reports')
+  .version('0.1.0')
+
+program
   .command('asset-report-filter')
-  .option('-i, --input <input>', 'Input file')
-  .option('-o, --output <output>', 'Output file')
+  .description('Filter asset report')
+  .requiredOption('-i, --input <input>', 'Input file')
+  .option('-o, --output <output>', 'Output file', 'filtered.csv')
+  .option('-c, --asset-id-column <column>', 'The name of the asset-id-column', 'asset_id')
+  .requiredOption('-a, --asset-ids <value>', 'Asset IDs to filter, comma separated')
   .action(async (commandAndOptions) => {
     if (commandAndOptions.input == null) program.error('--input option is required')
-    const outputFile = commandAndOptions.output ?? 'filtered.csv'
 
     // check if file exists
     if (!fs.existsSync(commandAndOptions.input)) {
-      program.error(`File ${commandAndOptions.input} does not exist`)
+      program.error(`File ${commandAndOptions.input as string} does not exist`)
     }
 
     const readStream = fs.createReadStream(commandAndOptions.input)
-    const writeStream = fs.createWriteStream(outputFile)
+    const writeStream = fs.createWriteStream(commandAndOptions.output)
 
     const totalSize = fs.statSync(commandAndOptions.input).size
 
@@ -33,10 +39,13 @@ program
       bar.update(progress)
     })
 
-    const columnFilters = [{
-      column: 'Age',
-      value: '38'
-    }]
+    const assetIds = (commandAndOptions.assetIds as string).split(',')
+    const columnFilters = assetIds.map((assetId) => {
+      return {
+        column: commandAndOptions.assetIdColumn as string,
+        value: assetId
+      }
+    })
 
     const rl = readline.createInterface({
       input: readStream,
@@ -47,6 +56,7 @@ program
     let firstLine = true
 
     let foundLines = 0
+    let totalNumberOfLines = 0
 
     // Create Promise for rl.on
     await new Promise<void>((resolve, reject) => {
@@ -54,7 +64,7 @@ program
         reject(err)
       })
       rl.on('close', () => {
-        console.log('\x1b[32m%s\x1b[0m', `Found and wrote ${foundLines} lines to "${outputFile}"`)
+        console.log('\x1b[32m%s\x1b[0m', `Found and wrote ${foundLines.toLocaleString()} lines from originally ${totalNumberOfLines.toLocaleString()} to "${commandAndOptions.output as string}"`)
         resolve()
       })
       rl.on('line', (line) => {
@@ -78,6 +88,8 @@ program
         const found = columnIndexAndValue.some((filter) => {
           return fileValues[filter.columnIndex] === filter.columnValue
         })
+
+        totalNumberOfLines += 1
 
         if (found) {
           foundLines += 1

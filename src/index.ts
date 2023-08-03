@@ -1,7 +1,7 @@
 import fs from 'fs'
 import * as readline from 'node:readline'
 import { program } from 'commander'
-import { ProgressBar } from 'ascii-progress'
+// import { ProgressBar } from 'ascii-progress'
 
 program
   .name('talentir')
@@ -28,15 +28,15 @@ program
 
     const totalSize = fs.statSync(commandAndOptions.input).size
 
-    const bar = new ProgressBar({
-      schema: ':bar.brightCyan, :percent.bold, :elapseds, :etas'
-    })
+    // const bar = new ProgressBar({
+    //   schema: ':bar.brightCyan, :percent.bold, :elapseds, :etas'
+    // })
 
     let transferredSize = 0
     readStream.on('data', (chunk) => {
       transferredSize += chunk.length
       const progress = (transferredSize / totalSize)
-      bar.update(progress)
+      console.log(`Progress: ${(progress * 100).toFixed(2)}%`)
     })
 
     const assetIds = (commandAndOptions.assetIds as string).split(',')

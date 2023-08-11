@@ -12,7 +12,11 @@
     "package": "pkg ."
   },
   "pkg": {
-    "outputPath": "build"
+    "outputPath": "build",
+    "targets": [
+      "node16-macos-x64",
+      "node16-win-x64"
+    ]
   },
   "keywords": [],
   "author": "",
@@ -27,7 +31,9 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
+    "@types/progress": "^2.0.5",
     "ascii-progress": "^2.0.0",
-    "commander": "^11.0.0"
+    "commander": "^11.0.0",
+    "progress": "^2.0.3"
   }
 }

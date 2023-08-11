@@ -1,7 +1,7 @@
 import fs from 'fs'
 import * as readline from 'node:readline'
 import { program } from 'commander'
-// import { ProgressBar } from 'ascii-progress'
+import ProgressBar from 'progress'
 
 program
   .name('talentir')
@@ -13,7 +13,8 @@ program
   .description('Filter asset report')
   .requiredOption('-i, --input <input>', 'Input file')
   .option('-o, --output <output>', 'Output file', 'filtered.csv')
-  .option('-c, --asset-id-column <column>', 'The name of the asset-id-column', 'asset_id')
+  .option('-c, --asset-id-column <column>', 'The name of the asset-id-column', 'Asset ID')
+  .option('-s, --separator <separator>', 'The separator used in the input file', ',')
   .requiredOption('-a, --asset-ids <value>', 'Asset IDs to filter, comma separated')
   .action(async (commandAndOptions) => {
     if (commandAndOptions.input == null) program.error('--input option is required')
@@ -28,15 +29,13 @@ program
 
     const totalSize = fs.statSync(commandAndOptions.input).size
 
-    // const bar = new ProgressBar({
-    //   schema: ':bar.brightCyan, :percent.bold, :elapseds, :etas'
-    // })
+    const bar = new ProgressBar(':bar, :percent, :elapseds, :etas', { total: 100 })
 
     let transferredSize = 0
     readStream.on('data', (chunk) => {
       transferredSize += chunk.length
       const progress = (transferredSize / totalSize)
-      console.log(`Progress: ${(progress * 100).toFixed(2)}%`)
+      bar.update(progress)
     })
 
     const assetIds = (commandAndOptions.assetIds as string).split(',')
@@ -68,7 +67,7 @@ program
         resolve()
       })
       rl.on('line', (line) => {
-        const fileValues = line.split(',')
+        const fileValues = line.split(commandAndOptions.separator as string)
 
         if (firstLine) {
           writeStream.write(line + '\n')

@@ -1,6 +1,6 @@
+import { program } from "commander";
 import fs from "fs";
 import * as readline from "node:readline";
-import { program } from "commander";
 import ProgressBar from "progress";
 
 program
@@ -12,19 +12,11 @@ program
 	.command("filter")
 	.description("Filter YouTube Reports")
 	.requiredOption("-i, --input <input>", "Input file")
-	.option("-o, --output <output>", "Output file", "filtered.csv")
-	.requiredOption(
-		"-c, --filter-column <column>",
-		"The name of the to be filter column",
-	)
+	.option("-o, --output <output>", "Output file")
 	.option(
 		"-s, --separator <separator>",
 		"The separator used in the input file",
 		",",
-	)
-	.requiredOption(
-		"-a, --filter-values <value>",
-		"Filter Values to filter, comma separated",
 	)
 	.action(async (commandAndOptions) => {
 		if (commandAndOptions.input == null)
@@ -35,10 +27,31 @@ program
 			program.error(`File ${commandAndOptions.input as string} does not exist`);
 		}
 
+		const outputFile = commandAndOptions.output as string | undefined;
+		const outputFilePath = outputFile ?? `${commandAndOptions.input.substring(0, commandAndOptions.input.lastIndexOf('/') + 1)}filtered-${commandAndOptions.input.split('/').pop()}`;
+		console.log(outputFilePath);
+
 		const readStream = fs.createReadStream(commandAndOptions.input);
-		const writeStream = fs.createWriteStream(commandAndOptions.output);
+		const writeStream = fs.createWriteStream(outputFilePath);
 
 		const totalSize = fs.statSync(commandAndOptions.input).size;
+
+		// Fetch channel IDs from API
+		const response = await fetch('https://talentir.com/api/youtube-channel-ids');
+		if (!response.ok) {
+			program.error('Failed to fetch channel IDs from API');
+		}
+		
+		const channelIds = (await response.json()).youtubeChannelIds as string;
+		const channelIdsArray = channelIds.split(",");
+
+		// Convert comma-separated string into array of unique channel IDs, including non-UC variants
+		const uniqueChannelIds = [...new Set(channelIdsArray.flatMap(id => {
+			if (id.startsWith('UC')) {
+				return [id, id.substring(2)]; // Include both UC and non-UC versions
+			}
+			return [id, `UC${id}`]; // Include both non-UC and UC versions
+		}))];
 
 		const bar = new ProgressBar(":bar, :percent, :elapseds, :etas", {
 			total: 100,
@@ -51,13 +64,18 @@ program
 			bar.update(progress);
 		});
 
-		const assetIds = (commandAndOptions.filterValues as string).split(",");
-		const columnFilters = assetIds.map((assetId) => {
-			return {
-				column: commandAndOptions.filterColumn as string,
-				value: assetId,
-			};
+		const columns = ["Channel Asset ID", "Channel ID"]
+
+		const columnFilters = columns.flatMap(column => {
+			return uniqueChannelIds.map((assetId) => {
+				return {
+					column: column,
+					value: assetId,
+				};
+			});
 		});
+
+		console.log(columnFilters);
 
 		const rl = readline.createInterface({
 			input: readStream,

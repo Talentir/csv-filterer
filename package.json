@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "ts-node ./src/index.ts",
     "build": "tsc",
-    "package": "pkg ."
+    "package": "bun build src/index.ts --compile --outfile build/talentir-cli"
   },
   "pkg": {
     "outputPath": "build",
